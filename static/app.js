@@ -1,6 +1,7 @@
 const state = {
     images: [],
-    processing: false
+    processing: false,
+    stopRequested: false
 };
 
 // Elements
@@ -12,6 +13,7 @@ const grid = document.getElementById('grid');
 const actionBar = document.getElementById('actionBar');
 const imageCount = document.getElementById('imageCount');
 const captionAllBtn = document.getElementById('captionAllBtn');
+const stopBtn = document.getElementById('stopBtn');
 const skipExistingCheckbox = document.getElementById('skipExisting');
 const includeTriggerCheckbox = document.getElementById('includeTrigger');
 const modelPriceSpan = document.getElementById('modelPrice');
@@ -329,8 +331,9 @@ captionAllBtn.addEventListener('click', async () => {
     
     if (state.processing) return;
     state.processing = true;
-    captionAllBtn.disabled = true;
-    captionAllBtn.innerHTML = 'Processing...';
+    state.stopRequested = false;
+    captionAllBtn.classList.add('hidden');
+    stopBtn.classList.remove('hidden');
     
     const skipExisting = skipExistingCheckbox.checked;
     
@@ -346,6 +349,12 @@ captionAllBtn.addEventListener('click', async () => {
     
     try {
         for (let i = 0; i < state.images.length; i++) {
+            // Check if stop was requested
+            if (state.stopRequested) {
+                showToast(`Stopped after ${completed} / ${total} images`, '');
+                break;
+            }
+            
             const img = state.images[i];
             
             // Skip logic
@@ -369,18 +378,30 @@ captionAllBtn.addEventListener('click', async () => {
             progressText.textContent = `${completed} / ${total}`;
         }
         
-        // Success notification
-        showToast(`All ${total} images captioned successfully!`, 'success');
+        // Success notification (only if not stopped)
+        if (!state.stopRequested) {
+            showToast(`All ${total} images captioned successfully!`, 'success');
+        }
         
     } catch (err) {
         console.error("Batch process error", err);
         showToast('Error during batch processing', '');
     } finally {
         state.processing = false;
-        captionAllBtn.disabled = false;
-        captionAllBtn.innerHTML = 'Caption All';
+        state.stopRequested = false;
+        stopBtn.classList.add('hidden');
+        stopBtn.disabled = false;
+        stopBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Stop`;
+        captionAllBtn.classList.remove('hidden');
         
         // Update final progress
         updateProgress();
     }
+});
+
+// Stop button handler
+stopBtn.addEventListener('click', () => {
+    state.stopRequested = true;
+    stopBtn.disabled = true;
+    stopBtn.innerHTML = 'Stopping...';
 });
