@@ -2,7 +2,7 @@
 
 AI-powered image captioning tool using OpenAI vision models.
 
-![Screenshot](assets/ss.png)
+![Screenshot](assets/ss.jpeg)
 
 ## Quick Start
 
