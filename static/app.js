@@ -13,6 +13,7 @@ const actionBar = document.getElementById('actionBar');
 const imageCount = document.getElementById('imageCount');
 const captionAllBtn = document.getElementById('captionAllBtn');
 const skipExistingCheckbox = document.getElementById('skipExisting');
+const includeTriggerCheckbox = document.getElementById('includeTrigger');
 const modelPriceSpan = document.getElementById('modelPrice');
 
 const PRICING = {
@@ -48,6 +49,13 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!PRICING[modelSelect.value]) {
         modelSelect.value = 'gpt-4.1-mini'; 
     }
+    // Load checkbox states
+    if (localStorage.getItem('skipExisting') !== null) {
+        skipExistingCheckbox.checked = localStorage.getItem('skipExisting') === 'true';
+    }
+    if (localStorage.getItem('includeTrigger') !== null) {
+        includeTriggerCheckbox.checked = localStorage.getItem('includeTrigger') === 'true';
+    }
     updatePrice();
 });
 
@@ -58,6 +66,8 @@ modelSelect.addEventListener('change', () => {
     localStorage.setItem('model', modelSelect.value);
     updatePrice();
 });
+skipExistingCheckbox.addEventListener('change', () => localStorage.setItem('skipExisting', skipExistingCheckbox.checked));
+includeTriggerCheckbox.addEventListener('change', () => localStorage.setItem('includeTrigger', includeTriggerCheckbox.checked));
 
 // Scan Folder
 // Scan Folder Logic
@@ -221,9 +231,14 @@ window.saveSingle = async (index) => {
     const img = state.images[index];
     const textarea = document.getElementById(`caption-${index}`);
     const statusIdx = document.getElementById(`status-${index}`);
-    const caption = textarea.value.trim();
+    let caption = textarea.value.trim();
     
     if (!caption) return alert('Caption is empty');
+    
+    // Prepend [trigger] if checkbox is checked
+    if (includeTriggerCheckbox.checked && !caption.startsWith('[trigger]')) {
+        caption = '[trigger] ' + caption;
+    }
     
     try {
         const res = await fetch('/api/save', {
@@ -236,6 +251,9 @@ window.saveSingle = async (index) => {
         });
         
         if (!res.ok) throw await res.json();
+        
+        // Update textarea to show what was actually saved
+        textarea.value = caption;
         
         statusIdx.textContent = 'Saved';
         statusIdx.classList.add('done');
