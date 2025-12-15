@@ -104,3 +104,15 @@ async def save_caption_file(image_path: str, caption_text: str) -> str:
         return caption_path
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+async def delete_caption_file(image_path: str) -> bool:
+    base_name = os.path.splitext(image_path)[0]
+    caption_path = base_name + ".txt"
+    
+    try:
+        if os.path.exists(caption_path):
+            os.remove(caption_path)
+            return True
+        return False
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -18,3 +18,6 @@ class CaptionRequest(BaseModel):
 class SaveRequest(BaseModel):
     image_path: str
     caption_text: str
+
+class DeleteRequest(BaseModel):
+    image_path: str

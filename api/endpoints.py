@@ -1,30 +1,17 @@
-import subprocess
 from typing import List
 
 from fastapi import APIRouter, File, HTTPException
 from fastapi.responses import FileResponse
 
-from api.schemas import ScanRequest, ImageItem, CaptionRequest, SaveRequest
-from api.services import scan_folder_for_images, generate_caption_with_openai, save_caption_file
+from api.schemas import ScanRequest, ImageItem, CaptionRequest, SaveRequest, DeleteRequest
+from api.services import scan_folder_for_images, generate_caption_with_openai, save_caption_file, delete_caption_file
 
 router = APIRouter()
 
 @router.post("/select-folder")
 async def select_folder_dialog():
-    try:
-        # Run AppleScript to open folder picker
-        result = subprocess.run(
-            ["osascript", "-e", 'POSIX path of (choose folder with prompt "Select Image Folder")'],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        return {"folder_path": result.stdout.strip()}
-    except subprocess.CalledProcessError:
-        # User canceled the dialog
-        return {"folder_path": None}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # Folder picker disabled - use manual path entry
+    return {"folder_path": None}
 
 @router.post("/scan", response_model=List[ImageItem])
 async def scan_folder(request: ScanRequest):
@@ -44,3 +31,8 @@ async def generate_caption(request: CaptionRequest):
 async def save_caption(request: SaveRequest):
     path = await save_caption_file(request.image_path, request.caption_text)
     return {"status": "success", "path": path}
+
+@router.post("/delete")
+async def delete_caption(request: DeleteRequest):
+    deleted = await delete_caption_file(request.image_path)
+    return {"status": "success", "deleted": deleted}
