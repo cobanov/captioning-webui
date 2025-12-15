@@ -80,8 +80,7 @@ modelSelect.addEventListener('change', () => {
 skipExistingCheckbox.addEventListener('change', () => localStorage.setItem('skipExisting', skipExistingCheckbox.checked));
 includeTriggerCheckbox.addEventListener('change', () => localStorage.setItem('includeTrigger', includeTriggerCheckbox.checked));
 
-// Scan Folder
-// Scan Folder Logic
+// Load Images from folder
 async function loadImages(path) {
     const folderPath = path ? path.trim() : folderPathInput.value.trim();
     if (!folderPath) return alert('Please enter a folder path');
@@ -381,9 +380,7 @@ captionAllBtn.addEventListener('click', async () => {
         captionAllBtn.disabled = false;
         captionAllBtn.innerHTML = 'Caption All';
         
-        // Hide progress bar after delay
-        setTimeout(() => {
-            progressBar.classList.add('hidden');
-        }, 2000);
+        // Update final progress
+        updateProgress();
     }
 });

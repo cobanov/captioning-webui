@@ -84,7 +84,6 @@ async def generate_caption_with_openai(api_key: str, model: str, image_path: str
             response = await client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload, timeout=60.0)
             response.raise_for_status()
             result = response.json()
-            # print(f"\033[94mDEBUG OpenAI Response: {result}\033[0m") # Removed debug print for cleanup
             return result['choices'][0]['message']['content']
         except httpx.HTTPStatusError as exc:
              error_msg = f"OpenAI API Error: {exc.response.text}"

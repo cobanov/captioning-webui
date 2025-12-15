@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, File, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 from api.schemas import ScanRequest, ImageItem, CaptionRequest, SaveRequest, DeleteRequest
