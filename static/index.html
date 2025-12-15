@@ -36,7 +36,7 @@
                         <label>Folder Path</label>
                         <input type="text" id="folderPath" placeholder="/path/to/images">
                     </div>
-                    <button id="loadBtn" class="primary-btn">Select Folder</button>
+                    <button id="loadBtn" class="primary-btn">Load</button>
                 </div>
             </div>
             <div class="action-bar hidden" id="actionBar">
@@ -58,7 +58,13 @@
                     </button>
                 </div>
             </div>
+            <div class="progress-bar hidden" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+                <span class="progress-text" id="progressText">0 / 0</span>
+            </div>
         </header>
+        
+        <div class="toast hidden" id="toast"></div>
 
         <main>
             <div id="grid" class="image-grid">

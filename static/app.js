@@ -15,6 +15,17 @@ const captionAllBtn = document.getElementById('captionAllBtn');
 const skipExistingCheckbox = document.getElementById('skipExisting');
 const includeTriggerCheckbox = document.getElementById('includeTrigger');
 const modelPriceSpan = document.getElementById('modelPrice');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const toast = document.getElementById('toast');
+
+// Toast notification helper
+function showToast(message, type = '') {
+    toast.textContent = message;
+    toast.className = 'toast ' + type;
+    setTimeout(() => toast.classList.add('hidden'), 3000);
+}
 
 const PRICING = {
     'gpt-4.1-mini': '$0.40',
@@ -98,7 +109,6 @@ async function loadImages(path) {
         
         if (state.images.length > 0) {
             actionBar.classList.remove('hidden');
-            imageCount.textContent = `${state.images.length} images found`;
         } else {
             actionBar.classList.add('hidden');
         }
@@ -107,35 +117,13 @@ async function loadImages(path) {
         alert('Error: ' + (err.detail || err.message));
     } finally {
         loadBtn.disabled = false;
-        loadBtn.textContent = 'Select Folder';
+        loadBtn.textContent = 'Load';
     }
 }
 
-// Button Click -> Open Dialog
-loadBtn.addEventListener('click', async () => {
-    // If there is already a path in input, should we just load it? 
-    // User asked "load images button should open folder selection window".
-    // So we prioritize opening the window.
-    try {
-        loadBtn.disabled = true;
-        loadBtn.textContent = 'Selecting...';
-        
-        const res = await fetch('/api/select-folder', { method: 'POST' });
-        if (!res.ok) throw await res.json();
-        
-        const data = await res.json();
-        if (data.folder_path) {
-            await loadImages(data.folder_path);
-        } else {
-            // User canceled
-            loadBtn.disabled = false;
-            loadBtn.textContent = 'Select Folder';
-        }
-    } catch (err) {
-        console.error(err);
-        // Fallback to manual load if dialog fails?
-        loadImages();
-    }
+// Button Click -> Load Images
+loadBtn.addEventListener('click', () => {
+    loadImages(folderPathInput.value);
 });
 
 // Allow manual entry with Enter key
@@ -173,12 +161,32 @@ function renderGrid() {
                 <div class="filename" title="${img.filename}">${img.filename}</div>
                 <textarea id="caption-${index}" placeholder="Caption will appear here..." onblur="saveSingle(${index})">${img.caption_content || ''}</textarea>
                 <div class="card-actions">
-                    <button class="card-btn" onclick="generateSingle(${index})">Generate</button>
+                    <button class="card-btn generate-btn" onclick="generateSingle(${index})">Generate</button>
+                    <button class="card-btn delete-btn" onclick="deleteCaption(${index})" title="Delete caption">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
                 </div>
             </div>
         `;
         grid.appendChild(card);
     });
+    
+    // Update progress bar after rendering
+    updateProgress();
+}
+
+// Update progress bar with captioned count
+function updateProgress() {
+    const captioned = state.images.filter(img => img.has_caption).length;
+    const total = state.images.length;
+    const percent = total > 0 ? (captioned / total) * 100 : 0;
+    
+    progressBar.classList.remove('hidden');
+    progressFill.style.width = `${percent}%`;
+    progressText.textContent = `${captioned} / ${total}`;
+    
+    // Update stats text
+    imageCount.textContent = `${total} images found / ${captioned} captioned`;
 }
 
 // Generate Single Caption
@@ -191,11 +199,15 @@ window.generateSingle = async (index) => {
     // Save API Key on usage
     localStorage.setItem('apiKey', apiKey);
     
+    const card = grid.children[index];
     const textarea = document.getElementById(`caption-${index}`);
     const statusIdx = document.getElementById(`status-${index}`);
+    const generateBtn = card.querySelector('.generate-btn');
     
     textarea.disabled = true;
     statusIdx.textContent = 'Generating...';
+    generateBtn.classList.add('generating');
+    card.classList.add('processing');
     
     try {
         const res = await fetch('/api/caption', {
@@ -223,6 +235,8 @@ window.generateSingle = async (index) => {
         alert('Error generating caption: ' + (err.detail || err.message));
     } finally {
         textarea.disabled = false;
+        generateBtn.classList.remove('generating');
+        card.classList.remove('processing');
     }
 };
 
@@ -262,8 +276,47 @@ window.saveSingle = async (index) => {
         img.has_caption = true;
         img.caption_content = caption;
         
+        // Update progress bar
+        updateProgress();
+        
     } catch (err) {
         alert('Error saving: ' + (err.detail || err.message));
+    }
+};
+
+// Delete Caption
+window.deleteCaption = async (index) => {
+    const img = state.images[index];
+    const textarea = document.getElementById(`caption-${index}`);
+    const statusIdx = document.getElementById(`status-${index}`);
+    
+    // Clear textarea
+    textarea.value = '';
+    
+    try {
+        // Delete the caption file
+        const res = await fetch('/api/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                image_path: img.absolute_path
+            })
+        });
+        
+        if (!res.ok) throw await res.json();
+        
+        statusIdx.textContent = 'Ready';
+        statusIdx.classList.remove('done');
+        
+        // Update local state
+        img.has_caption = false;
+        img.caption_content = '';
+        
+        // Update progress bar
+        updateProgress();
+        
+    } catch (err) {
+        alert('Error deleting: ' + (err.detail || err.message));
     }
 };
 
@@ -282,29 +335,55 @@ captionAllBtn.addEventListener('click', async () => {
     
     const skipExisting = skipExistingCheckbox.checked;
     
+    // Count images to process
+    const toProcess = state.images.filter((img, i) => !(skipExisting && img.has_caption));
+    const total = toProcess.length;
+    let completed = 0;
+    
+    // Show progress bar
+    progressBar.classList.remove('hidden');
+    progressFill.style.width = '0%';
+    progressText.textContent = `0 / ${total}`;
+    
     try {
-        // Iterate sequentially or parallel? Browser limit connection usually 6.
-        // Let's do sequential to avoid hitting rate limits too hard.
-        
         for (let i = 0; i < state.images.length; i++) {
             const img = state.images[i];
             
             // Skip logic
             if (skipExisting && img.has_caption) continue;
             
-            // Scroll into view if possible
+            // Highlight current card
             const card = grid.children[i];
+            card.classList.add('processing');
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
             // Generate (includes auto-save now)
             await window.generateSingle(i);
+            
+            // Remove processing state
+            card.classList.remove('processing');
+            
+            // Update progress
+            completed++;
+            const percent = (completed / total) * 100;
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = `${completed} / ${total}`;
         }
+        
+        // Success notification
+        showToast(`All ${total} images captioned successfully!`, 'success');
+        
     } catch (err) {
         console.error("Batch process error", err);
+        showToast('Error during batch processing', '');
     } finally {
         state.processing = false;
         captionAllBtn.disabled = false;
-        captionAllBtn.innerHTML = `
-            Caption All
-        `;
+        captionAllBtn.innerHTML = 'Caption All';
+        
+        // Hide progress bar after delay
+        setTimeout(() => {
+            progressBar.classList.add('hidden');
+        }, 2000);
     }
 });

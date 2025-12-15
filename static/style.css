@@ -332,10 +332,10 @@ textarea:focus {
 .card-actions {
     margin: 0 -1rem -1rem -1rem;
     border-top: 1px solid var(--border-color);
+    display: flex;
 }
 
 .card-btn {
-    width: 100%;
     padding: 0.75rem;
     border: none;
     background-color: transparent;
@@ -344,6 +344,64 @@ textarea:focus {
     font-size: 0.75rem;
     font-weight: 500;
     transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-btn.generate-btn {
+    flex: 1;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.card-btn.generate-btn:hover {
+    box-shadow: 
+        0 0 4px rgba(168, 85, 247, 0.4),
+        0 0 8px rgba(59, 130, 246, 0.3),
+        0 0 12px rgba(16, 185, 129, 0.2);
+}
+
+.card-btn.generate-btn.generating {
+    animation: aiThinking 2s ease-in-out infinite;
+}
+
+@keyframes aiThinking {
+    0%, 100% {
+        box-shadow: 
+            0 0 6px rgba(168, 85, 247, 0.5),
+            0 0 12px rgba(59, 130, 246, 0.4),
+            0 0 18px rgba(16, 185, 129, 0.3);
+    }
+    25% {
+        box-shadow: 
+            0 0 6px rgba(59, 130, 246, 0.5),
+            0 0 12px rgba(16, 185, 129, 0.4),
+            0 0 18px rgba(236, 72, 153, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 0 6px rgba(16, 185, 129, 0.5),
+            0 0 12px rgba(236, 72, 153, 0.4),
+            0 0 18px rgba(168, 85, 247, 0.3);
+    }
+    75% {
+        box-shadow: 
+            0 0 6px rgba(236, 72, 153, 0.5),
+            0 0 12px rgba(168, 85, 247, 0.4),
+            0 0 18px rgba(59, 130, 246, 0.3);
+    }
+}
+
+.card-btn.delete-btn {
+    width: 44px;
+    border-left: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+
+.card-btn.delete-btn:hover {
+    background-color: #2a1515;
+    color: #ef4444;
 }
 
 .card-btn:hover {
@@ -378,4 +436,91 @@ textarea:focus {
 
 .action-bar {
     animation: fadeIn 0.2s ease;
+}
+
+/* ========== PROGRESS BAR ========== */
+.progress-bar {
+    margin-top: 0.75rem;
+    height: 6px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--success-color);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    right: 0;
+    top: -1.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ========== TOAST NOTIFICATION ========== */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+}
+
+.toast.success {
+    border-color: var(--success-color);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ========== LOADING STATE ========== */
+.image-card.processing {
+    animation: cardAiThinking 2s ease-in-out infinite;
+}
+
+.image-card.processing .status-badge {
+    background-color: rgba(168, 85, 247, 0.8);
+    color: #fff;
+}
+
+@keyframes cardAiThinking {
+    0%, 100% {
+        box-shadow: 
+            0 0 8px rgba(168, 85, 247, 0.4),
+            0 0 16px rgba(59, 130, 246, 0.3),
+            0 0 24px rgba(16, 185, 129, 0.2);
+    }
+    25% {
+        box-shadow: 
+            0 0 8px rgba(59, 130, 246, 0.4),
+            0 0 16px rgba(16, 185, 129, 0.3),
+            0 0 24px rgba(236, 72, 153, 0.2);
+    }
+    50% {
+        box-shadow: 
+            0 0 8px rgba(16, 185, 129, 0.4),
+            0 0 16px rgba(236, 72, 153, 0.3),
+            0 0 24px rgba(168, 85, 247, 0.2);
+    }
+    75% {
+        box-shadow: 
+            0 0 8px rgba(236, 72, 153, 0.4),
+            0 0 16px rgba(168, 85, 247, 0.3),
+            0 0 24px rgba(59, 130, 246, 0.2);
+    }
 }
