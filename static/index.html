@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Captioning Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-content">
+                <h1>Cobanov Captioning</h1>
+                <div class="settings-bar">
+                    <div class="input-group">
+                        <label>OpenAI API Key</label>
+                        <input type="password" id="apiKey" placeholder="sk-...">
+                    </div>
+                    <div class="input-group">
+                        <div style="display: flex; justify-content: space-between;">
+                            <label>Model</label>
+                            <span id="modelPrice" style="font-size: 0.7rem; color: var(--accent-color); font-weight: 600;"></span>
+                        </div>
+                        <select id="modelSelect">
+                            <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+                            <option value="gpt-4.1-nano">gpt-4.1-nano</option>
+                            <option value="gpt-5-nano">gpt-5-nano</option>
+                            <option value="gpt-5-mini">gpt-5-mini</option>
+                            <option value="gpt-5.1">gpt-5.1</option>
+                        </select>
+                    </div>
+                    <div class="input-group folder-path-group">
+                        <label>Folder Path</label>
+                        <input type="text" id="folderPath" placeholder="/path/to/images">
+                    </div>
+                    <button id="loadBtn" class="primary-btn">Select Folder</button>
+                </div>
+            </div>
+            <div class="action-bar hidden" id="actionBar">
+                <div class="stats">
+                    <span id="imageCount">0 images found</span>
+                </div>
+                <div class="controls">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="skipExisting" checked>
+                        <span>Skip existing captions</span>
+                    </label>
+                    <button id="captionAllBtn" class="accent-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                        Caption All
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="grid" class="image-grid">
+                <!-- Images will be injected here -->
+                <div class="empty-state">
+                    <p>Enter a folder path to start analyzing images</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
