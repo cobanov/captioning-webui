@@ -2,14 +2,16 @@
 
 AI-powered image captioning tool using OpenAI vision models.
 
+![Screenshot](assets/ss.png)
+
 ## Quick Start
 
 ```bash
 uv sync
-uvicorn main:app --reload --port 8000
+python run.py
 ```
 
-Open `http://127.0.0.1:8000`
+Open `http://localhost:8000` (or your local IP on port 8000)
 
 ## Usage
 
