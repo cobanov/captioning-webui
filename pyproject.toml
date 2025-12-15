@@ -1,7 +1,19 @@
 [project]
 name = "captioning"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI-powered image captioning tool with OpenAI integration"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "aiofiles>=23.2.0",
+    "httpx>=0.25.0",
+    "python-multipart>=0.0.6",
+]
+
+[project.scripts]
+captioning = "main:app"
+
+[tool.uv]
+dev-dependencies = []
